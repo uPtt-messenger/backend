@@ -1,3 +1,7 @@
+import time
+
+import requests
+
 try:
     from . import config
     from . import log
@@ -6,16 +10,20 @@ except ImportError:
     import log
 
 
+_base_url = f"http://127.0.0.1:{config.config['mq_port']}"
+
 def receive_message():
     logger = log.logger
 
-    if recv_socket is None:
-        logger.error('MQ is not initialized')
-        return
-
     while True:
-        message = recv_socket.recv_string()
-        logger.info(f"Received message: {message}")
+        try:
+            response = requests.get(f"{_base_url}/pull/", params={'channel': 'to_backend'})
+            message = response.json()
+            logger.debug(f"Received message: {message}")
+            return message
+        except Exception as e:
+            logger.error(f"Failed to receive message: {e}")
+            time.sleep(1)
 
 
 def send_message(message: str):
@@ -29,22 +37,4 @@ def send_message(message: str):
 
 
 def init():
-    global recv_socket
-    global send_socket
-
-    logger = log.logger
-
-    context = zmq.Context()
-    recv_socket = context.socket(zmq.SUB)
-    recv_socket.setsockopt_string(zmq.SUBSCRIBE, '')
-
-    send_socket = context.socket(zmq.PUB)
-
-    url = f"tcp://*:{config.config['mq_port']}"
-    logger.info(f"PUB socket binding to {url}")
-    send_socket.bind(url)
-
-    logger.info(f"SUB socket connecting to {url}")
-    recv_socket.connect(url)
-
-    logger.info('MQ initialized')
+    pass

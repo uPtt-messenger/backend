@@ -21,30 +21,23 @@ def test_push_message():
     }
 
     params = {
-        "channel": "test",
+        "channel": "to_backend",
         "message": json.dumps(test_msg)
     }
 
     response = requests.post(url, params=params)
-    print(f"Push Message Response: {response.json()}")
+    logger.info(f"Push Message Response: {response.json()}")
 
 
 def test_pull_message():
-    channel = "test"
     url = f"{base_url}/pull/"
 
     params = {
-        "channel": channel
+        "channel": 'to_backend'
     }
 
     response = requests.get(url, params=params)
-    print(f"Pull Message Response: {response.json()}")
-
-
-def test_get_all_channels():
-    url = f"{base_url}/channels/"
-    response = requests.get(url)
-    print(f"Get All Channels Response: {response.json()}")
+    logger.info(f"Pull Message Response: {response.json()}")
 
 
 if __name__ == '__main__':
