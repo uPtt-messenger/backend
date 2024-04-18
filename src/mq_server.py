@@ -1,4 +1,6 @@
 import json
+import asyncio
+from typing import Dict
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -14,7 +16,7 @@ app = FastAPI()
 
 log.init()
 
-message_queue = {}
+message_queue: Dict[str, asyncio.Queue] = {}
 available_channels = [
     'to_backend',
     'to_ui',
@@ -39,10 +41,11 @@ async def push_message(channel: str, message: str):
     logger.info(f"Pushing message to {channel}: {message}")
 
     if channel not in message_queue:
-        message_queue[channel] = []
-    message_queue[channel].append(message)
+        message_queue[channel] = asyncio.Queue()
 
-    return {"message": "Message pushed"}
+    await message_queue[channel].put(message)
+
+    return {"result": "Message pushed"}
 
 
 @app.get("/pull/")
@@ -54,20 +57,24 @@ async def pull_message(channel: str):
         raise HTTPException(status_code=404, detail="Channel not found")
 
     if channel not in message_queue:
-        logger.warning(f"No message in {channel}")
-        raise HTTPException(status_code=404, detail=f"No message found in {channel}")
+        message_queue[channel] = asyncio.Queue()
 
-    if not message_queue[channel]:
-        logger.info(f"No message in {channel}")
-        raise HTTPException(status_code=404, detail=f"No message found in {channel}")
+    try:
+        message = await asyncio.wait_for(message_queue[channel].get(), timeout=config.config['long_polling_timeout'])
+        return {"messages": [message]}
+    except asyncio.TimeoutError:
+        return {"messages": []}
 
-    message = message_queue[channel].pop(0)
-    logger.info(f"Pulling message from {channel}: {message}")
 
-    logger.info(f"len(message_queue[channel]): {len(message_queue[channel])}")
+def init():
+    logger = log.logger
 
-    return {"content": message}
+    for channel in available_channels:
+        message_queue[channel] = asyncio.Queue()
+
+    logger.info('MQ server initialized')
 
 
 if __name__ == "__main__":
+    init()
     uvicorn.run(app, host="127.0.0.1", port=config.config['mq_port'])

@@ -1,4 +1,4 @@
 config = {
     'mq_port': 16180,
-    'query_interval': 1,
+    'long_polling_timeout': 15,
 }
