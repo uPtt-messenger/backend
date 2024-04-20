@@ -3,7 +3,10 @@ from typing import Optional
 
 import PyPtt
 
-import log
+try:
+    from . import log
+except ImportError:
+    import log
 
 ptt_api = None
 logger: Optional[Logger] = None

@@ -5,6 +5,7 @@ import __init__
 import log
 import mq
 import ptt
+import status
 
 
 def init():
@@ -19,8 +20,11 @@ def init():
     logger.info(f'Welcome to uPtt backend v {__init__.__version__}!')
     logger.debug('======== DEBUG MODE ========')
 
+    status.init()
     ptt.init()
     mq.init()
+
+    mq.receive_message_forever()
 
 
 if __name__ == '__main__':
