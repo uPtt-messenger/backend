@@ -1,5 +1,3 @@
-import json
-
 import PyPtt
 import requests
 
@@ -8,27 +6,23 @@ try:
     from . import log
     from . import ptt
     from . import status
+    from . import message
 except ImportError:
     import config
     import log
     import ptt
     import status
+    import message
 
 _base_url = None
 
 
-def send_message(channel: str, message: dict):
+def send_message(msg: message.Message):
     logger = log.logger
 
-    msg = {
-        "channel": channel,
-        "message": json.dumps(message),
-        "reply_channel": "to_backend"
-    }
-
-    logger.debug(f"Sending message: {msg}")
-    response = requests.post(f"{_base_url}/push/", params=msg)
-    logger.debug(f"Sent message: {response.json()}")
+    logger.info(f"Sending message: {msg}")
+    response = requests.post(f"{_base_url}/push/", json=msg.to_dict())
+    return response.json()
 
 
 def receive_message_forever():
@@ -43,36 +37,38 @@ def receive_message_forever():
 
     while True:
         try:
-            response = requests.get(url, params=params, timeout=config.config['long_polling_timeout'] + 1)
+            response = requests.get(url, json=params, timeout=config.config['long_polling_timeout'] + 1)
         except requests.exceptions.Timeout:
-            logger.info("Timeout")
+            logger.info("pull timeout")
             continue
         except Exception as e:
             logger.error(f"Error: {e}")
             continue
         logger.info(f"Pull Message Responses : {response.json()}")
 
-        message = response.json()
-        if 'messages' in message:
-            for msg in message['messages']:
+        msg = response.json()
+        if 'messages' in msg:
+            for msg in msg['messages']:
                 logger.info(f"Received message: {msg}")
 
-                match msg['type']:
+                reply_channel = msg['reply_channel']
+
+                match msg['category']:
                     case 'close':
                         logger.info("Received closing command")
                         return
                     case 'login':
                         logger.info("Received login command")
 
-                        reply_channel = msg['reply_channel']
-
                         if status_manager.status['login'] == status.Status.SUCCESS:
                             logger.info("Already logged in")
-                            send_message(reply_channel, {
-                                'type': 'login_status',
-                                'status': 'failed',
-                                'message': 'already logged in'
-                            })
+
+                            send_message(
+                                message.StatusMessage(
+                                    reply_channel,
+                                    'to_backend',
+                                    status.Status.FAILURE,
+                                    'already logged in'))
                             continue
 
                         ptt_id = msg['username']
@@ -85,40 +81,46 @@ def receive_message_forever():
                                  'ptt_pw': ptt_pw
                                  })
 
-                            send_message(reply_channel, {
-                                'type': 'login_status',
-                                'status': 'success',
-                                'id': ptt_id
-                            })
+                            send_message(
+                                message.StatusMessage(
+                                    reply_channel,
+                                    'to_backend',
+                                    status.Status.SUCCESS,
+                                    'login success'))
+
                             status_manager.status['login'] = status.Status.SUCCESS
                         except PyPtt.LoginError:
                             logger.info("Unknown login failed")
-                            send_message(reply_channel, {
-                                'type': 'login_status',
-                                'status': 'failed',
-                                'message': 'unknown login error'
-                            })
+                            send_message(
+                                message.StatusMessage(
+                                    reply_channel,
+                                    'to_backend',
+                                    status.Status.FAILURE,
+                                    'unknown login failed'))
                         except PyPtt.WrongIDorPassword:
                             logger.info("Wrong id or password")
-                            send_message(reply_channel, {
-                                'type': 'login_status',
-                                'status': 'failed',
-                                'message': 'wrong id or password'
-                            })
+                            send_message(
+                                message.StatusMessage(
+                                    reply_channel,
+                                    'to_backend',
+                                    status.Status.FAILURE,
+                                    'wrong id or password'))
                         except PyPtt.OnlySecureConnection:
                             logger.info("Only secure connection")
-                            send_message(reply_channel, {
-                                'type': 'login_status',
-                                'status': 'failed',
-                                'message': 'only secure connection'
-                            })
+                            send_message(
+                                message.StatusMessage(
+                                    reply_channel,
+                                    'to_backend',
+                                    status.Status.FAILURE,
+                                    'only secure connection'))
                         except PyPtt.ResetYourContactEmail:
                             logger.info("Reset your contact email")
-                            send_message(reply_channel, {
-                                'type': 'login_status',
-                                'status': 'failed',
-                                'message': 'set contact email first'
-                            })
+                            send_message(
+                                message.StatusMessage(
+                                    reply_channel,
+                                    'to_backend',
+                                    status.Status.FAILURE,
+                                    'reset your contact email'))
 
                     case 'logout':
                         logger.info("Received logout command")
@@ -128,6 +130,47 @@ def receive_message_forever():
                         status_manager.status['login'] = status.Status.UNKNOWN
                         status_manager.status['logout'] = status.Status.SUCCESS
 
+                    case 'chat':
+                        logger.info("Received chat command")
+
+                        if status_manager.status['login'] != status.Status.SUCCESS:
+                            logger.info("Not logged in")
+
+                            send_message(
+                                message.StatusMessage(
+                                    reply_channel,
+                                    'to_backend',
+                                    status.Status.FAILURE,
+                                    'not logged in'))
+                            continue
+
+                        username = msg['username']
+                        chat_message = msg['message']
+
+                        try:
+                            ptt.ptt_api.call(
+                                'mail',
+                                {
+                                    'ptt_id': username,
+                                    'title': 'uPtt chat message',
+                                    'content': chat_message,
+                                    'backup': False
+                                })
+
+                            send_message(
+                                message.StatusMessage(
+                                    reply_channel,
+                                    'to_backend',
+                                    status.Status.SUCCESS,
+                                    'chat success'))
+                        except PyPtt.Error as e:
+                            logger.info("Send chat failed")
+                            send_message(
+                                message.StatusMessage(
+                                    reply_channel,
+                                    'to_backend',
+                                    status.Status.FAILURE,
+                                    f'Send chat failed: {e}'))
                     case _:
                         logger.info(f"Unknown message: {msg}")
 

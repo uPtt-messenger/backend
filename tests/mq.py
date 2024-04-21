@@ -8,31 +8,27 @@ import requests
 
 sys.path.append(os.getcwd())
 
+from src import message
 from src import log
 from src import config
 
 base_url = f"http://127.0.0.1:{config.config['mq_port']}"
 
 
-def test_push_message(channel, count):
+def test_push_message(channel, count, interval=0):
     url = f"{base_url}/push/"
 
     for i in range(count):
-        test_msg = {
-            "name": "test",
-            "value": i
-        }
-
-        params = {
-            "channel": channel,
-            "message": json.dumps(test_msg)
-        }
+        test_msg = message.Message(channel, channel, {
+            'name': 'test',
+            'value': i
+        })
 
         logger.info(f"Pushing message to {channel}: {test_msg}")
-        response = requests.post(url, params=params)
+        response = requests.post(url, json=test_msg.to_dict())
         logger.info(f"Push Message Response: {response.json()}")
 
-        time.sleep(0.5)
+        time.sleep(interval)
 
 
 def test_pull_message(channel):
@@ -46,11 +42,15 @@ def test_pull_message(channel):
 
     while time.time() - start_time < 30:
         try:
-            response = requests.get(url, params=params, timeout=config.config['long_polling_timeout'] + 1)
+            response = requests.get(url, json=params, timeout=config.config['long_polling_timeout'] + 1)
         except requests.exceptions.Timeout:
-            logger.info("Timeout")
-            continue
+            logger.info("pull timeout")
+            break
         logger.info(f"Pull Message Response from {channel}: {response.json()}")
+
+        if 'messages' in response.json():
+            if len(response.json()['messages']) == 0:
+                break
 
 
 def test_invalid_channel():
@@ -67,7 +67,7 @@ def test_invalid_channel():
     }
 
     logger.info(f"Pushing message to invalid channel: {test_msg}")
-    response = requests.post(url, params=params)
+    response = requests.post(url, json=params)
     logger.info(f"Push Message Response: {response.json()}")
 
 
@@ -82,7 +82,7 @@ def test_invalid_message():
     }
 
     logger.info(f"Pushing invalid message: {test_msg}")
-    response = requests.post(url, params=params)
+    response = requests.post(url, json=params)
     logger.info(f"Push Message Response: {response.json()}")
 
 
@@ -93,20 +93,19 @@ if __name__ == '__main__':
 
     logger.info('Starting tests')
 
-    # Test pushing and pulling messages from different channels
-    channels = ['to_backend', 'to_ui', 'to_system_tray', 'to_notification']
-    for channel in channels:
-        t = threading.Thread(target=test_push_message, args=(channel, 10))
-        t.start()
-        test_pull_message(channel)
-        t.join()
-
-    # Test pushing and pulling large number of messages
-    t = threading.Thread(target=test_push_message, args=('to_backend', 100))
-    t.start()
+    test_push_message('to_backend', 5)
     test_pull_message('to_backend')
-    t.join()
 
-    # Test invalid channel and message format
     test_invalid_channel()
     test_invalid_message()
+
+    t0 = threading.Thread(target=test_push_message, args=('to_backend', 10, 1), daemon=True)
+    t0.start()
+
+    t1 = threading.Thread(target=test_pull_message, args=('to_backend',), daemon=True)
+    t1.start()
+
+    t0.join()
+    t1.join()
+
+

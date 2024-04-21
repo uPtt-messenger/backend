@@ -7,10 +7,10 @@ except ImportError:
     import log
 
 
-class Status(Enum):
-    SUCCESS = 0
-    FAILURE = 1
-    UNKNOWN = 2
+class Status:
+    SUCCESS = 'SUCCESS'
+    FAILURE = 'FAILURE'
+    UNKNOWN = 'UNKNOWN'
 
 
 class StatusManager:
