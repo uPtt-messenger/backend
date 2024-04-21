@@ -1,4 +1,4 @@
-from enum import Enum
+import collections
 from typing import Optional
 
 try:
@@ -19,7 +19,7 @@ class StatusManager:
     """
 
     def __init__(self):
-        self.status = {}
+        self.status = collections.defaultdict(lambda: Status.UNKNOWN)
 
 
 status_manager: Optional[StatusManager] = None

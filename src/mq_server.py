@@ -1,9 +1,13 @@
 import asyncio
 import json
+import os
+import signal
+import time
 from typing import Dict
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.openapi.models import Response
 
 try:
     from src import log
@@ -23,6 +27,7 @@ available_channels = [
     'to_ui',
     'to_system_tray',
     'to_notification',
+    'to_mq_server',
 ]
 
 
@@ -54,6 +59,21 @@ async def push_message(request: Request):
     if channel not in message_queue:
         message_queue[channel] = asyncio.Queue()
         push_event[channel] = asyncio.Event()
+
+    if channel == 'to_mq_server':
+        match dict_message['category']:
+            case 'clear':
+                for channel in available_channels:
+                    if channel in message_queue:
+                        message_queue[channel] = asyncio.Queue()
+                    if channel in push_event:
+                        push_event[channel] = asyncio.Event()
+                return {"result": "Message queue cleared"}
+            case 'close':
+                os.kill(os.getpid(), signal.SIGTERM)
+                time.sleep(5)
+            case _:
+                logger.warning(f"Invalid category: {dict_message['category']}")
 
     await message_queue[channel].put(dict_message)
     push_event[channel].set()

@@ -16,13 +16,27 @@ except ImportError:
 
 _base_url = None
 
+cleared = False
+
 
 def send_message(msg: message.Message):
     logger = log.logger
 
+    global cleared
+    if not cleared:
+        logger.info("Clearing messages")
+        requests.get(f"{_base_url}/clear/")
+        cleared = True
+
     logger.info(f"Sending message: {msg}")
     response = requests.post(f"{_base_url}/push/", json=msg.to_dict())
-    return response.json()
+    try:
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logger.info(f"Error: {e}")
+
+    return {}
 
 
 def receive_message_forever():
@@ -55,6 +69,13 @@ def receive_message_forever():
 
                 match msg['category']:
                     case 'close':
+
+                        close_msg = message.CloseMessage(
+                            'to_mq_server',
+                            'to_backend')
+
+                        send_message(close_msg)
+
                         logger.info("Received closing command")
                         return
                     case 'login':
@@ -173,8 +194,6 @@ def receive_message_forever():
                                     f'Send chat failed: {e}'))
                     case _:
                         logger.info(f"Unknown message: {msg}")
-
-        logger.info("No more messages")
 
     logger.info("End of receive_message_forever")
 
