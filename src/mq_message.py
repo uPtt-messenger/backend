@@ -76,6 +76,10 @@ class LogoutMessage(Message):
 
 
 class ChatMessage(Message):
+    """
+    Chat message to be sent through PTT
+    """
+
     username: str
     message: str
 

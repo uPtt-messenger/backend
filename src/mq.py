@@ -16,17 +16,9 @@ except ImportError:
 
 _base_url = None
 
-cleared = False
-
 
 def send_message(msg: message.Message):
     logger = log.logger
-
-    global cleared
-    if not cleared:
-        logger.info("Clearing messages")
-        requests.get(f"{_base_url}/clear/")
-        cleared = True
 
     logger.info(f"Sending message: {msg}")
     response = requests.post(f"{_base_url}/push/", json=msg.to_dict())
