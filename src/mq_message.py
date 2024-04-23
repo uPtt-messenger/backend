@@ -1,11 +1,6 @@
 import datetime
 import json
 
-try:
-    from . import status
-except ImportError:
-    import status
-
 
 class Message:
     channel: str

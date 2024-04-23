@@ -10,14 +10,12 @@ try:
     from . import log
     from . import status
     from . import mq_message
-    from . import message
     from . import mq
     from . import config
 except ImportError:
     import log
     import status
     import mq_message
-    import message
     import mq
     import config
 

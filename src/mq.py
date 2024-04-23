@@ -47,7 +47,9 @@ def receive_message_forever(channel: str = 'to_backend'):
 
     while True:
         try:
-            response = requests.get(url, json=params, timeout=config.config['long_polling_timeout'] + 1)
+            response = requests.get(
+                url, json=params,
+                timeout=config.config['long_polling_timeout'] + 1)
         except requests.exceptions.Timeout:
             logger.info("pull timeout")
             continue
@@ -204,7 +206,7 @@ def receive_message_forever(channel: str = 'to_backend'):
                                 'mail',
                                 {
                                     'ptt_id': username,
-                                    'title': f'uPtt chat msg',
+                                    'title': 'uPtt chat msg',
                                     'content': chat_message,
                                     'backup': False
                                 })
