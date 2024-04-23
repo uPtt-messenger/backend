@@ -5,11 +5,11 @@ on:
     branches-ignore:
       - main
     paths:
-      - 'src/**'
-      - 'poetry.lock'
-      - 'pyproject.toml'
-      - '.github/workflows/test.yml'
-      - 'tests/**'
+      - "src/**"
+      - "poetry.lock"
+      - "pyproject.toml"
+      - ".github/workflows/test.yml"
+      - "tests/**"
 
 jobs:
 
@@ -22,7 +22,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: 3.10
 
       - name: Generate requirements.txt through poetry
         run: |
@@ -42,8 +42,8 @@ jobs:
 
       - name: Run tests
         run: |
-          python src/mq_server.py &
-          sleep 1
-          python src/main.py &
-          sleep 1
-          python tests/mq.py
+          pip install pytest pytest-cov pytest-xdist
+          pytest tests/ -n auto --cov=./src --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
