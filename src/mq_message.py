@@ -1,3 +1,4 @@
+import datetime
 import json
 
 try:
@@ -39,6 +40,15 @@ class CloseMessage(Message):
                 'category': 'close'})
 
 
+class SelfCloseMessage(Message):
+    def __init__(self, channel: str, reply_channel: str):
+        super().__init__(
+            channel,
+            reply_channel,
+            {
+                'category': 'self_close'})
+
+
 class StatusMessage(Message):
     state: str
 
@@ -75,7 +85,7 @@ class LogoutMessage(Message):
                 'category': 'logout'})
 
 
-class ChatMessage(Message):
+class SendChatMessage(Message):
     """
     Chat message to be sent through PTT
     """
@@ -99,6 +109,33 @@ class ChatMessage(Message):
             channel,
             reply_channel,
             {
-                'category': 'chat',
+                'category': 'send_chat',
                 'username': username,
                 'message': content})
+
+
+class RecvChatMessage(Message):
+    """
+    Chat message received from PTT
+    """
+
+    username: str
+    date: str
+    message: str
+
+    def __init__(self, channel: str, reply_channel: str, username: str, date: str, message: str):
+        message = message[:message.find('====================')].strip()
+        self.chat_content = message
+
+        # convert Sun Apr 21 10:59:24 2024 to 2024-04-21 10:59:24
+        date = datetime.datetime.strptime(date, '%a %b %d %H:%M:%S %Y')
+        date = date.strftime('%Y-%m-%d %H:%M:%S')
+
+        super().__init__(
+            channel,
+            reply_channel,
+            {
+                'category': 'recv_chat',
+                'username': username,
+                'date': date,
+                'message': message})

@@ -11,6 +11,7 @@ class Status:
     SUCCESS = 'SUCCESS'
     FAILURE = 'FAILURE'
     UNKNOWN = 'UNKNOWN'
+    PENDING = 'PENDING'
 
 
 class StatusManager:

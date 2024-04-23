@@ -7,10 +7,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pyptt = "^1.2.3"
 fastapi = "^0.110.1"
 uvicorn = "^0.29.0"
 requests = "^2.31.0"
+pyptt = "^1.2.6"
 
 
 [build-system]

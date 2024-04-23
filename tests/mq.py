@@ -8,7 +8,7 @@ import requests
 
 sys.path.append(os.getcwd())
 
-from src import message
+from src import mq_message
 from src import log
 from src import config
 
@@ -19,7 +19,7 @@ def test_push_message(channel, count, interval=0):
     url = f"{base_url}/push/"
 
     for i in range(count):
-        test_msg = message.Message(channel, channel, {
+        test_msg = mq_message.Message(channel, channel, {
             'name': 'test',
             'value': i
         })

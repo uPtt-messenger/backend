@@ -7,7 +7,6 @@ from typing import Dict
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.openapi.models import Response
 
 try:
     from src import log

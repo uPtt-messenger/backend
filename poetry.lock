@@ -179,13 +179,13 @@ files = [
 
 [[package]]
 name = "fastapi"
-version = "0.110.1"
+version = "0.110.2"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "fastapi-0.110.1-py3-none-any.whl", hash = "sha256:5df913203c482f820d31f48e635e022f8cbfe7350e4830ef05a3163925b1addc"},
-    {file = "fastapi-0.110.1.tar.gz", hash = "sha256:6feac43ec359dfe4f45b2c18ec8c94edb8dc2dfc461d417d9e626590c071baad"},
+    {file = "fastapi-0.110.2-py3-none-any.whl", hash = "sha256:239403f2c0a3dda07a9420f95157a7f014ddb2b770acdbc984f9bdf3ead7afdb"},
+    {file = "fastapi-0.110.2.tar.gz", hash = "sha256:b53d673652da3b65e8cd787ad214ec0fe303cad00d2b529b86ce7db13f17518d"},
 ]
 
 [package.dependencies]
@@ -348,13 +348,13 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pyptt"
-version = "1.2.5"
+version = "1.2.7"
 description = "PyPtt"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "PyPtt-1.2.5-py3-none-any.whl", hash = "sha256:f519962b9d24bb39e5dc95d42b89c822bc137a0ed6c732555a03231d03282672"},
-    {file = "PyPtt-1.2.5.tar.gz", hash = "sha256:29d2883f6678ceaca1f38b5679e8436892d8b210461cdc066e819aa92c79b3d2"},
+    {file = "PyPtt-1.2.7-py3-none-any.whl", hash = "sha256:0b1c02908fbcc7ea32d7b2273f173a12ea672e747daca844989cb8f9868790e9"},
+    {file = "pyptt-1.2.7.tar.gz", hash = "sha256:285d7baa6ecee3a942b25ce0bedf36658686c432ecfc35bc4e82d3a4c6d7b39d"},
 ]
 
 [package.dependencies]
@@ -634,4 +634,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "59c6f90d8b7b5fa480e0e7503e7023814684e45f2595ae94ec45356f6846ade0"
+content-hash = "722ce7435b7f2a61a8729a8c2156896c2b283831f4e5f8db2f0c7a97110e13ab"
