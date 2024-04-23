@@ -14,8 +14,6 @@ from src import config
 
 base_url = f"http://127.0.0.1:{config.config['mq_port']}"
 
-logger = None
-
 
 def test_push_message(channel, count, interval=0):
     url = f"{base_url}/push/"
@@ -88,10 +86,8 @@ def test_invalid_message():
     logger.info(f"Push Message Response: {response.json()}")
 
 
-def test_func():
+if __name__ == '__main__':
     log.init()
-
-    global logger
 
     logger = log.logger
 
@@ -113,5 +109,3 @@ def test_func():
     t1.join()
 
 
-if __name__ == '__main__':
-    test_func()
