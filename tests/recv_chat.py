@@ -30,4 +30,10 @@ if __name__ == '__main__':
 
     utils.login(status_manager, 1)
 
-    receiver.join()
+    try:
+        receiver.join()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        utils.logout(status_manager)
+        logger.info('Test send chat done')

@@ -36,7 +36,7 @@ def check_new_message():
     start_search_mailbox_index = 1
     first_round = True
     while True:
-        time.sleep(3)
+        time.sleep(config.config['check_ptt_mailbox_interval'])
         if status_manager.status['login'] == status.Status.SUCCESS:
             try:
                 current_mail_index = ptt_api.call(

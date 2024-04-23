@@ -348,13 +348,13 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pyptt"
-version = "1.2.7"
+version = "1.2.8"
 description = "PyPtt"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "PyPtt-1.2.7-py3-none-any.whl", hash = "sha256:0b1c02908fbcc7ea32d7b2273f173a12ea672e747daca844989cb8f9868790e9"},
-    {file = "pyptt-1.2.7.tar.gz", hash = "sha256:285d7baa6ecee3a942b25ce0bedf36658686c432ecfc35bc4e82d3a4c6d7b39d"},
+    {file = "PyPtt-1.2.8-py3-none-any.whl", hash = "sha256:38ff3706d4a2f99d6181d92596e081f0d9312cfb6872a729e366695fd9f0e8ad"},
+    {file = "pyptt-1.2.8.tar.gz", hash = "sha256:4d363d8ca4a581f3b53e05d1bbb7ce60f66a6d5a3fc1f8fadfd13f8ad5a61479"},
 ]
 
 [package.dependencies]
