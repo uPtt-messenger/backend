@@ -14,6 +14,14 @@ class Status:
     PENDING = 'PENDING'
 
 
+class Actions:
+    LOGIN = 'login'
+    LOGOUT = 'logout'
+    SEND_CHAT = 'send_chat'
+    CLOSE = 'close'
+    SELF_CLOSE = 'self_close'
+
+
 class StatusManager:
     """
     管理狀態相關資料的類別。

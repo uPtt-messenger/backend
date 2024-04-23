@@ -133,23 +133,23 @@ def check_new_message():
                 start_search_mailbox_index = current_mail_index + 1
 
             except PyPtt.RequireLogin:
-                if status_manager.status['login'] == status.Status.SUCCESS:
+                if status_manager.status['action'] == status.Actions.LOGIN:
                     # if we are logged in, we should reconnect
                     status_manager.status['login'] = status.Status.PENDING
                     login_msg = mq_message.LoginMessage(
                         'to_backend',
-                        'to_ui',
+                        'to_backend',
                         config.config['ptt_id'],
                         config.config['ptt_pw'])
                     mq.send_message(login_msg)
                 continue
             except PyPtt.ConnectionClosed:
-                if status_manager.status['login'] == status.Status.SUCCESS:
+                if status_manager.status['action'] == status.Actions.LOGIN:
                     # if we are logged in, we should reconnect
                     status_manager.status['login'] = status.Status.PENDING
                     login_msg = mq_message.LoginMessage(
                         'to_backend',
-                        'to_ui',
+                        'to_backend',
                         config.config['ptt_id'],
                         config.config['ptt_pw'])
                     mq.send_message(login_msg)

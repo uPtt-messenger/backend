@@ -1,5 +1,4 @@
 import os
-import random
 import sys
 import time
 
@@ -10,36 +9,46 @@ from src import mq
 from src import status
 
 
-def login(status_manager: status.StatusManager, id_index: int = None):
-
+def login(status_manager: status.StatusManager, channel: str, reply_channel: str, id_index: int = None):
     status_manager.status['login'] = status.Status.PENDING
     login_msg = mq_message.LoginMessage(
-        'to_backend',
-        'to_ui',
+        channel,
+        reply_channel,
         os.environ[f'PTT_ID_{id_index}'],
         os.environ[f'PTT_PW_{id_index}'])
 
     result = mq.send_message(login_msg)
 
     while status_manager.status['login'] == status.Status.PENDING and result is not None:
-        time.sleep(0.1)
+        try:
+            time.sleep(0.1)
+        except KeyboardInterrupt:
+            break
 
 
-def logout(status_manager: status.StatusManager):
+def logout(status_manager: status.StatusManager, channel: str, reply_channel: str):
     status_manager.status['logout'] = status.Status.PENDING
 
     logout_msg = mq_message.LogoutMessage(
-        'to_backend',
-        'to_ui')
+        channel,
+        reply_channel)
 
     mq.send_message(logout_msg)
     while status_manager.status['logout'] == status.Status.PENDING:
         time.sleep(0.1)
 
 
-def close():
+def close(channel: str, reply_channel: str):
     close_msg = mq_message.CloseMessage(
-        'to_backend',
-        'to_ui')
+        channel,
+        reply_channel)
+
+    mq.send_message(close_msg)
+
+
+def self_close(channel: str, reply_channel: str):
+    close_msg = mq_message.SelfCloseMessage(
+        channel,
+        reply_channel)
 
     mq.send_message(close_msg)

@@ -13,15 +13,15 @@ import utils
 
 
 def test_close_process():
-    utils.login(status_manager, 0)
-    utils.logout(status_manager)
-    utils.close()
+    utils.login(status_manager, 'to_backend', 'to_ui', 0)
+    utils.logout(status_manager, 'to_backend', 'to_ui')
+    utils.close('to_backend', 'to_ui')
 
 
 def test_login_logout():
     for i in range(3):
-        utils.login(status_manager, 0)
-        utils.logout(status_manager)
+        utils.login(status_manager, 'to_backend', 'to_ui', 0)
+        utils.logout(status_manager, 'to_backend', 'to_ui')
 
         time.sleep(5)
 
@@ -34,14 +34,13 @@ if __name__ == '__main__':
     logger.info('Test close')
 
     status.init()
-    ptt.init()
     mq.init()
 
     status_manager = status.status_manager
 
     time.sleep(1)
 
-    receiver = threading.Thread(target=mq.receive_message_forever)
+    receiver = threading.Thread(target=mq.receive_message_forever, args=('to_ui',))
     receiver.start()
 
     time.sleep(1)

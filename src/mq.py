@@ -35,13 +35,13 @@ def send_message(msg: mq_message.Message):
     return None
 
 
-def receive_message_forever():
+def receive_message_forever(channel: str = 'to_backend'):
     logger = log.logger
 
     url = f"{_base_url}/pull/"
 
     params = {
-        "channel": 'to_backend'
+        "channel": channel
     }
     status_manager = status.status_manager
 
@@ -75,7 +75,7 @@ def receive_message_forever():
 
                         close_msg = mq_message.CloseMessage(
                             'to_mq_server',
-                            'to_backend')
+                            channel)
 
                         send_message(close_msg)
 
@@ -94,8 +94,9 @@ def receive_message_forever():
                             send_message(
                                 mq_message.StatusMessage(
                                     reply_channel,
-                                    'to_backend',
-                                    status.Status.FAILURE,
+                                    channel,
+                                    'login',
+                                    status.Status.SUCCESS,
                                     'already logged in'))
                             continue
 
@@ -109,24 +110,30 @@ def receive_message_forever():
                         try:
                             ptt.ptt_api.call(
                                 'login',
-                                {'ptt_id': ptt_id,
-                                 'ptt_pw': ptt_pw
-                                 })
+                                {
+                                    'ptt_id': ptt_id,
+                                    'ptt_pw': ptt_pw
+                                })
 
                             send_message(
                                 mq_message.StatusMessage(
                                     reply_channel,
-                                    'to_backend',
+                                    channel,
+                                    'login',
                                     status.Status.SUCCESS,
                                     'login success'))
 
                             status_manager.status['login'] = status.Status.SUCCESS
+                            status_manager.status['logout'] = status.Status.UNKNOWN
+                            status_manager.status['action'] = status.Actions.LOGIN
+
                         except PyPtt.LoginError:
                             logger.info("Unknown login failed")
                             send_message(
                                 mq_message.StatusMessage(
                                     reply_channel,
-                                    'to_backend',
+                                    channel,
+                                    'login',
                                     status.Status.FAILURE,
                                     'unknown login failed'))
                         except PyPtt.WrongIDorPassword:
@@ -134,7 +141,8 @@ def receive_message_forever():
                             send_message(
                                 mq_message.StatusMessage(
                                     reply_channel,
-                                    'to_backend',
+                                    channel,
+                                    'login',
                                     status.Status.FAILURE,
                                     'wrong id or password'))
                         except PyPtt.OnlySecureConnection:
@@ -142,7 +150,8 @@ def receive_message_forever():
                             send_message(
                                 mq_message.StatusMessage(
                                     reply_channel,
-                                    'to_backend',
+                                    channel,
+                                    'login',
                                     status.Status.FAILURE,
                                     'only secure connection'))
                         except PyPtt.ResetYourContactEmail:
@@ -150,17 +159,27 @@ def receive_message_forever():
                             send_message(
                                 mq_message.StatusMessage(
                                     reply_channel,
-                                    'to_backend',
+                                    channel,
+                                    'login',
                                     status.Status.FAILURE,
                                     'reset your contact email'))
 
                     case 'logout':
                         logger.info("Received logout command")
 
+                        status_manager.status['action'] = status.Actions.LOGOUT
                         ptt.ptt_api.call('logout')
 
                         status_manager.status['login'] = status.Status.UNKNOWN
                         status_manager.status['logout'] = status.Status.SUCCESS
+
+                        send_message(
+                            mq_message.StatusMessage(
+                                reply_channel,
+                                channel,
+                                'logout',
+                                status.Status.SUCCESS,
+                                'logout success'))
 
                     case 'send_chat':
                         logger.info("Received send_chat command")
@@ -171,7 +190,8 @@ def receive_message_forever():
                             send_message(
                                 mq_message.StatusMessage(
                                     reply_channel,
-                                    'to_backend',
+                                    channel,
+                                    'login',
                                     status.Status.FAILURE,
                                     'not logged in'))
                             continue
@@ -192,17 +212,32 @@ def receive_message_forever():
                             send_message(
                                 mq_message.StatusMessage(
                                     reply_channel,
-                                    'to_backend',
+                                    channel,
+                                    'send_chat',
                                     status.Status.SUCCESS,
-                                    'chat success'))
+                                    'send chat success'))
                         except PyPtt.Error as e:
                             logger.info("Send chat failed")
                             send_message(
                                 mq_message.StatusMessage(
                                     reply_channel,
-                                    'to_backend',
+                                    channel,
+                                    'send_chat',
                                     status.Status.FAILURE,
-                                    f'Send chat failed: {e}'))
+                                    f'send chat failed: {e}'))
+                    case 'status':
+                        logger.info("Received status command")
+
+                        status_msg = msg['message']
+                        action_state = msg['state']
+                        action = msg['action']
+
+                        status_manager.status[action] = action_state
+
+                        if action_state == status.Status.SUCCESS:
+                            logger.info(f"Status {action}: {action_state}")
+                        else:
+                            logger.info(f"Status {action}: {status_msg}")
                     case _:
                         logger.info(f"Unknown message: {msg}")
 

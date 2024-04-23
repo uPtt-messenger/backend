@@ -52,12 +52,13 @@ class SelfCloseMessage(Message):
 class StatusMessage(Message):
     state: str
 
-    def __init__(self, channel: str, reply_channel: str, state: str, message: str = None):
+    def __init__(self, channel: str, reply_channel: str, action: str, state: str, message: str = None):
         super().__init__(
             channel,
             reply_channel,
             {
                 'category': 'status',
+                'action': action,
                 'state': state,
                 'message': message})
 
