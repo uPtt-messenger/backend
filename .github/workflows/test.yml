@@ -41,8 +41,8 @@ jobs:
 
       - name: Run tests
         run: |
-          python src/mq_server.py &
+          python src/uptt_mq_server.py &
           sleep 1
-          python src/main.py &
+          python src/uptt_backend.py &
           sleep 1
           python tests/mq.py
