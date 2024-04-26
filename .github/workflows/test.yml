@@ -1,4 +1,4 @@
-name: Python Test Workflow
+name: Test
 
 on:
   push:
@@ -12,7 +12,6 @@ on:
       - "tests/**"
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
 

@@ -1,11 +1,11 @@
 import argparse
 import logging
 
-import __init__
 import log
 import mq
 import ptt
 import status
+import version
 
 
 def init():
@@ -17,7 +17,7 @@ def init():
     log.init(logging.DEBUG if args.test else logging.INFO)
     logger = log.logger
 
-    logger.info(f'Welcome to uPtt backend v {__init__.__version__}!')
+    logger.info(f'Welcome to uPtt backend v {version.__version__}!')
     logger.debug('======== DEBUG MODE ========')
 
     status.init()

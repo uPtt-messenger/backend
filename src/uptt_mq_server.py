@@ -128,4 +128,4 @@ def init():
 
 if __name__ == "__main__":
     init()
-    uvicorn.run("mq_server:app", host="127.0.0.1", port=config.config['mq_port'])
+    uvicorn.run("uptt_mq_server:app", host="127.0.0.1", port=config.config['mq_port'])

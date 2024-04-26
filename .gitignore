@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 .idea/
 ptt.sh
+.DS_Store
