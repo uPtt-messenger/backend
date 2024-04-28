@@ -4,6 +4,11 @@ set -Eeuo pipefail
 function build() {
     python3 -m nuitka --standalone --follow-imports --output-dir=build --show-progress --show-memory --lto=yes src/uptt_backend.py
     python3 -m nuitka --standalone --follow-imports --output-dir=build --show-progress --show-memory --lto=yes --include-module=uptt_mq_server src/uptt_mq_server.py
+
+    # cp all files to the build directory: backend/build-packages
+    mkdir -p build-packages
+    cp -r build/uptt_backend.dist/* build-packages
+    cp -r build/uptt_mq_server.dist/* build-packages
 }
 
 function script_usage() {
