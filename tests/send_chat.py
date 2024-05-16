@@ -16,13 +16,13 @@ def test_process():
         time.sleep(2)
 
         # login
-        utils.login(status_manager, 'to_backend', 'to_ui', 0)
+        utils.login(status_manager, 'to_ptt_backend', 'to_login_window', 0)
 
         # send chat message
         for i in range(5):
             chat_msg = mq_message.SendChatMessage(
-                'to_backend',
-                'to_ui',
+                'to_ptt_backend',
+                'to_login_window',
                 os.environ['PTT_ID_1'],
                 f'test chat message {i}')
 
@@ -30,8 +30,8 @@ def test_process():
 
         logger.info('Test send chat done')
     finally:
-        utils.logout(status_manager, 'to_backend', 'to_ui')
-        utils.self_close('to_ui', 'to_backend')
+        utils.logout(status_manager, 'to_ptt_backend', 'to_login_window')
+        utils.self_close('to_login_window', 'to_ptt_backend')
 
 
 if __name__ == '__main__':
@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     status_manager = status.status_manager
 
-    receiver = threading.Thread(target=mq.receive_message_forever, args=('to_ui',))
+    receiver = threading.Thread(target=mq.receive_message_forever, args=('to_login_window',))
     receiver.start()
 
     time.sleep(1)

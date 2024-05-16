@@ -35,7 +35,7 @@ def send_message(msg: mq_message.Message):
     return None
 
 
-def receive_message_forever(channel: str = 'to_backend'):
+def receive_message_forever(channel: str = 'to_ptt_backend'):
     logger = log.logger
 
     url = f"{_base_url}/pull/"

@@ -107,8 +107,8 @@ def check_new_message():
                         continue
 
                     chat_msg = mq_message.RecvChatMessage(
-                        'to_ui',
-                        'to_backend',
+                        'to_login_window',
+                        'to_ptt_backend',
                         mail['author'],
                         mail['date'],
                         mail['content'])
@@ -135,8 +135,8 @@ def check_new_message():
                     # if we are logged in, we should reconnect
                     status_manager.status['login'] = status.Status.PENDING
                     login_msg = mq_message.LoginMessage(
-                        'to_backend',
-                        'to_backend',
+                        'to_ptt_backend',
+                        'to_ptt_backend',
                         config.config['ptt_id'],
                         config.config['ptt_pw'])
                     mq.send_message(login_msg)
@@ -146,8 +146,8 @@ def check_new_message():
                     # if we are logged in, we should reconnect
                     status_manager.status['login'] = status.Status.PENDING
                     login_msg = mq_message.LoginMessage(
-                        'to_backend',
-                        'to_backend',
+                        'to_ptt_backend',
+                        'to_ptt_backend',
                         config.config['ptt_id'],
                         config.config['ptt_pw'])
                     mq.send_message(login_msg)

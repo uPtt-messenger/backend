@@ -22,8 +22,9 @@ log.init()
 message_queue: Dict[str, asyncio.Queue] = {}
 push_event: Dict[str, asyncio.Event] = {}
 available_channels = [
-    'to_backend',
-    'to_ui',
+    'to_ptt_backend',
+    'to_login_window',
+    'to_chat_window',
     'to_system_tray',
     'to_notification',
     'to_mq_server',
