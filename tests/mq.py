@@ -77,7 +77,7 @@ def test_invalid_message():
     test_msg = "invalid message"
 
     params = {
-        "channel": "to_ptt_backend",
+        "channel": "test",
         "message": test_msg
     }
 
@@ -93,16 +93,16 @@ if __name__ == '__main__':
 
     logger.info('Starting tests')
 
-    test_push_message('to_ptt_backend', 5)
-    test_pull_message('to_ptt_backend')
+    test_push_message('test', 5)
+    test_pull_message('test')
 
     test_invalid_channel()
     test_invalid_message()
 
-    t0 = threading.Thread(target=test_push_message, args=('to_ptt_backend', 10, 1), daemon=True)
+    t0 = threading.Thread(target=test_push_message, args=('test', 10, 1), daemon=True)
     t0.start()
 
-    t1 = threading.Thread(target=test_pull_message, args=('to_ptt_backend',), daemon=True)
+    t1 = threading.Thread(target=test_pull_message, args=('test',), daemon=True)
     t1.start()
 
     t0.join()

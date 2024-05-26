@@ -28,6 +28,7 @@ available_channels = [
     'to_system_tray',
     'to_notification',
     'to_mq_server',
+    'test'
 ]
 
 
