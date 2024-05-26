@@ -1,0 +1,48 @@
+name: Test
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - "src/**"
+      - "poetry.lock"
+      - "pyproject.toml"
+      - ".github/workflows/test.yml"
+      - "tests/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Generate requirements.txt through poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry poetry-plugin-export
+          poetry export -f requirements.txt --output requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run linter
+        run: |
+          pip install flake8
+          flake8 ./src --ignore=E501
+
+      - name: Run tests
+        run: |
+          python src/uptt_mq_server.py &
+          sleep 1
+          python src/uptt_backend.py &
+          sleep 1
+          python tests/mq.py
