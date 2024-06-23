@@ -12,12 +12,14 @@ try:
     from . import mq_message
     from . import mq
     from . import config
+    from . import database
 except ImportError:
     import log
     import status
     import mq_message
     import mq
     import config
+    import database
 
 ptt_api: Optional[PyPtt.Service] = None
 
@@ -36,6 +38,7 @@ def check_new_message():
     while True:
         time.sleep(config.config['check_ptt_mailbox_interval'])
         if status_manager.status['login'] == status.Status.SUCCESS:
+
             try:
                 current_mail_index = ptt_api.call(
                     'get_newest_index',
@@ -112,6 +115,8 @@ def check_new_message():
                         mail['author'],
                         mail['date'],
                         mail['content'])
+
+                    database.db.insert_message(mail['author'], config.config['ptt_id'], mail['content'], mail['date'])
 
                     chat_msg_list.append(chat_msg)
                     chat_msg_index.append(index)

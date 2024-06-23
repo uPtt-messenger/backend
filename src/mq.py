@@ -9,12 +9,14 @@ try:
     from . import ptt
     from . import status
     from . import mq_message
+    from . import database
 except ImportError:
     import config
     import log
     import ptt
     import status
     import mq_message
+    import database
 
 _base_url = None
 
@@ -129,6 +131,8 @@ def receive_message_forever(channel: str = 'to_ptt_backend'):
                             status_manager.status['logout'] = status.Status.UNKNOWN
                             status_manager.status['action'] = status.Actions.LOGIN
 
+                            database.db = database.Database(ptt_id)
+
                         except PyPtt.LoginError:
                             logger.info("Unknown login failed")
                             send_message(
@@ -174,6 +178,8 @@ def receive_message_forever(channel: str = 'to_ptt_backend'):
 
                         status_manager.status['login'] = status.Status.UNKNOWN
                         status_manager.status['logout'] = status.Status.SUCCESS
+
+                        database.db = None
 
                         send_message(
                             mq_message.StatusMessage(
@@ -227,6 +233,9 @@ def receive_message_forever(channel: str = 'to_ptt_backend'):
                                     'send_chat',
                                     status.Status.FAILURE,
                                     f'send chat failed: {e}'))
+
+                        database.db.insert_message(config.config['ptt_id'], username, chat_message)
+
                     case 'status':
                         logger.info("Received status command")
 
@@ -240,6 +249,35 @@ def receive_message_forever(channel: str = 'to_ptt_backend'):
                             logger.info(f"Status {action}: {action_state}")
                         else:
                             logger.info(f"Status {action}: {status_msg}")
+                    case 'get_chat_history':
+                        logger.info("Received get_chat_history command")
+
+                        if status_manager.status['login'] != status.Status.SUCCESS:
+                            logger.info("Not logged in")
+
+                            send_message(
+                                mq_message.StatusMessage(
+                                    reply_channel,
+                                    channel,
+                                    'get_chat_history',
+                                    status.Status.FAILURE,
+                                    'not logged in'))
+                            continue
+
+                        username = msg['username']
+
+                        chat_history = database.db.get_messages(config.config['ptt_id'], username)
+
+                        for chat in chat_history:
+                            send_message(
+                                mq_message.RecvChatMessage(
+                                    reply_channel,
+                                    channel,
+                                    chat['author'],
+                                    chat['date'],
+                                    chat['content']))
+
+
                     case _:
                         logger.info(f"Unknown message: {msg}")
 
